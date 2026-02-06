@@ -36,6 +36,7 @@ If the order status is "Cooking", "Ready", or "Completed", the button must be di
 When a user attempts to cancel an order that is already cooking, the system must display an error message: "Unable to cancel. Your order is already being prepared by the kitchen."
 Upon successful cancellation, the system must automatically initiate a refund to the original payment method (card).
 The order status must be updated to "Cancelled" in the database immediately after cancellation is confirmed.
+
 A confirmation email must be sent to the user's registered email address containing:
 Order ID
 Cancellation timestamp
@@ -45,30 +46,30 @@ The cancellation action must be logged with user ID, order ID, and timestamp for
 The UI must provide real-time feedback (e.g., loading spinner) during the cancellation process.
 If the refund process fails, the system must log the error, notify the user, and queue the refund for manual review.
 
-4. Technical Constraints
-Order Status Dependency: Cancellation eligibility depends on real-time order status from the kitchen management system. Integration latency must be < 2 seconds.
-Payment Gateway Integration: Refund processing must comply with the payment provider's API (e.g., Stripe, PayPal) with proper idempotency keys to prevent duplicate refunds.
-Refund Processing Time: Acknowledge that actual refund to the customer's card may take 3-5 business days depending on the bank/card issuer.
-Email Service: Use the existing email service provider (e.g., SendGrid, AWS SES) with proper error handling and retry logic.
-Concurrency Handling: Implement optimistic locking or database transactions to prevent race conditions if the kitchen updates order status while cancellation is in progress.
-Authorization: Only the user who placed the order can cancel it (validate user session/token against order ownership).
-Idempotency: Prevent duplicate cancellation requests if the user clicks the button multiple times.
+5. Technical Constraints
+     Order Status Dependency: Cancellation eligibility depends on real-time order status from the kitchen management system. Integration latency must be < 2 seconds.
+     Payment Gateway Integration: Refund processing must comply with the payment provider's API (e.g., Stripe, PayPal) with proper idempotency keys to prevent duplicate refunds.
+     Refund Processing Time: Acknowledge that actual refund to the customer's card may take 3-5 business days depending on the bank/card issuer.
+     Email Service: Use the existing email service provider (e.g., SendGrid, AWS SES) with proper error handling and retry logic.
+     Concurrency Handling: Implement optimistic locking or database transactions to prevent race conditions if the kitchen updates order status while cancellation is in progress.
+     Authorization: Only the user who placed the order can cancel it (validate user session/token against order ownership).
+     Idempotency: Prevent duplicate cancellation requests if the user clicks the button multiple times.
 
-5. Negative Test Scenarios
-User attempts to cancel an order that is already in "Cooking" status → System displays error message and prevents cancellation.
-User attempts to cancel an order that has already been cancelled → System displays "Order already cancelled" message.
-Network timeout during cancellation request → System retries or displays appropriate error message; order status remains unchanged.
-Payment gateway refund API fails or times out → System logs error, notifies user of delay, and queues for manual processing.
-User clicks "Cancel Order" multiple times rapidly → System processes only one cancellation request (idempotency check).
-Email service is down or fails to send confirmation email → Cancellation and refund still proceed; email is queued for retry.
-Order status changes from "Pending" to "Cooking" during cancellation processing → System detects status change and aborts cancellation with appropriate error message.
-Unauthorized user attempts to cancel another user's order → System returns 403 Forbidden error.
-User with insufficient network connectivity submits cancellation → System handles timeout gracefully with user-friendly error message.
-Refund amount calculation error (e.g., promotions, discounts applied) → System calculates correct refund amount including all adjustments.
-User's registered email address is invalid or bounces → System logs email failure but completes cancellation and refund.
-Database connection fails during status update → Transaction rolls back; user sees error and can retry.
+6. Negative Test Scenarios
+     User attempts to cancel an order that is already in "Cooking" status → System displays error message and prevents cancellation.
+     User attempts to cancel an order that has already been cancelled → System displays "Order already cancelled" message.
+     Network timeout during cancellation request → System retries or displays appropriate error message; order status remains unchanged.
+     Payment gateway refund API fails or times out → System logs error, notifies user of delay, and queues for manual processing.
+     User clicks "Cancel Order" multiple times rapidly → System processes only one cancellation request (idempotency check).
+     Email service is down or fails to send confirmation email → Cancellation and refund still proceed; email is queued for retry.
+     Order status changes from "Pending" to "Cooking" during cancellation processing → System detects status change and aborts cancellation with appropriate error message.
+     Unauthorized user attempts to cancel another user's order → System returns 403 Forbidden error.
+     User with insufficient network connectivity submits cancellation → System handles timeout gracefully with user-friendly error message.
+     Refund amount calculation error (e.g., promotions, discounts applied) → System calculates correct refund amount including all adjustments.
+     User's registered email address is invalid or bounces → System logs email failure but completes cancellation and refund.
+     Database connection fails during status update → Transaction rolls back; user sees error and can retry.
 
-6. Gherkin Scenarios
+7. Gherkin Scenarios
 Scenario 1: Successful Order Cancellation Before Cooking
 gherkin
 Feature: Cancel Order Before Kitchen Starts Cooking
@@ -86,6 +87,7 @@ Feature: Cancel Order Before Kitchen Starts Cooking
     And a confirmation email should be sent to "user@example.com"
     And the email should contain order ID "ORD-12345" and refund amount "$25.99"
     And the user should see a success message: "Your order has been cancelled and refund is being processed"
+    
 Scenario 2: Failed Cancellation Attempt After Cooking Started
 gherkin
 Feature: Prevent Order Cancellation After Cooking Starts
@@ -103,6 +105,7 @@ Feature: Prevent Order Cancellation After Cooking Starts
     And the order status should remain "Cooking"
     And no refund should be initiated
     And no confirmation email should be sent
+    
 Scenario 3: Refund Processing with Email Confirmation
 gherkin
 Feature: Automated Refund and Email Notification
@@ -124,6 +127,7 @@ Feature: Automated Refund and Email Notification
       | Refund Amount           | $42.50                       |
       | Refund Processing Time  | 3-5 business days            |
       | Cancellation Timestamp  | [Current DateTime]           |
+      
 Scenario 4: Concurrent Status Change During Cancellation
 gherkin
 Feature: Handle Race Condition During Cancellation
