@@ -18,7 +18,7 @@ Currently, I am specializing in integrating **AI-driven workflows** to increase 
 ![Manual Testing](https://img.shields.io/badge/Testing-Manual%20%26%20Exploratory-blue)
 ![Postman](https://img.shields.io/badge/Tools-Postman%20%2F%20SOAPUI-orange)
 ![SQL](https://img.shields.io/badge/Data-SQL%20Validation-green)
-![Automation](https://img.shields.io/badge/Automation-Selenium%20%2F%20Cypress-brightgreen)
+![Automation](https://img.shields.io/badge/Automation-Playwright%20%2F%20Selenium%20%2F%20Cypress-brightgreen)
 ![AI Tools](https://img.shields.io/badge/AI-Prompt%20Engineering%20%2F%20Copilot-blueviolet)
 
 ---
